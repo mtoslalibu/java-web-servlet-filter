@@ -145,14 +145,15 @@ public class TracingFilter implements Filter {
          * If request is traced then do not start new span.
          */
 
-    System.out.println("*-* Server doFilter");
+    System.out.println("*-* Server doFilter -- deniyoruz");
     //toslali: do not create span here -- trying something
         if (true){
-            chain.doFilter(httpRequest, httpResponse);
+            chain.doFilter(servletRequest, servletResponse);
             return;
         }
 
         if (servletRequest.getAttribute(SERVER_SPAN_CONTEXT) != null) {
+            System.out.println("*-* Dofilter bir daha");
             chain.doFilter(servletRequest, servletResponse);
         } else {
             SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
@@ -170,7 +171,7 @@ public class TracingFilter implements Filter {
             for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
                 spanDecorator.onRequest(httpRequest, scope.span());
             }
-	    System.out.println("*-* do filter now --  building");
+	        System.out.println("*-* do filter now --  building");
            // final Scope scope = null;
             try {
                 chain.doFilter(servletRequest, servletResponse);
