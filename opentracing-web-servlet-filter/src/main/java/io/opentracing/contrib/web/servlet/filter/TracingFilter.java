@@ -166,6 +166,8 @@ public class TracingFilter implements Filter {
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                     .startActive(false);
 
+                    System.out.println("*-*Server builded current span " + scope.span());
+
             httpRequest.setAttribute(SERVER_SPAN_CONTEXT, scope.span().context());
 
             for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
