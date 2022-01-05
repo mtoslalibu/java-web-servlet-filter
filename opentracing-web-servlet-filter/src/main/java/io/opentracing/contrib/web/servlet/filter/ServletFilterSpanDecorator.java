@@ -81,6 +81,7 @@ public interface ServletFilterSpanDecorator {
             Tags.HTTP_METHOD.set(span, httpServletRequest.getMethod());
             //without query params
             Tags.HTTP_URL.set(span, httpServletRequest.getRequestURL().toString());
+	    System.out.println("*-* OnRequests tags now : " + httpServletRequest.getRequestURL().toString() + " : " + httpServletRequest.getMethod());
         }
 
         @Override
