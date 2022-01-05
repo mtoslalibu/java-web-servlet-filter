@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -30,18 +31,21 @@ import io.opentracing.util.GlobalTracer;
 /**
  * Tracing servlet filter.
  *
- * Filter can be programmatically added to {@link ServletContext} or initialized via web.xml.
+ * Filter can be programmatically added to {@link ServletContext} or initialized
+ * via web.xml.
  *
  * Following code examples show possible initialization:
  *
  * <pre>
- * {@code
-  * TracingFilter filter = new TracingFilter(tracer);
- *  servletContext.addFilter("tracingFilter", filter);
-  * }
+ * {
+ *     &#64;code
+ *     TracingFilter filter = new TracingFilter(tracer);
+ *     servletContext.addFilter("tracingFilter", filter);
+ * }
  * </pre>
  *
  * Or include filter in web.xml and:
+ * 
  * <pre>
  * {@code
  *  GlobalTracer.register(tracer);
@@ -49,7 +53,8 @@ import io.opentracing.util.GlobalTracer;
  * }
  * </pre>
  *
- * Current server span context is accessible via {@link HttpServletRequest#getAttribute(String)} with name
+ * Current server span context is accessible via
+ * {@link HttpServletRequest#getAttribute(String)} with name
  * {@link TracingFilter#SERVER_SPAN_CONTEXT}.
  *
  * @author Pavol Loffay
@@ -58,16 +63,19 @@ public class TracingFilter implements Filter {
     private static final Logger log = Logger.getLogger(TracingFilter.class.getName());
 
     /**
-     * Use as a key of {@link ServletContext#setAttribute(String, Object)} to set span decorators
+     * Use as a key of {@link ServletContext#setAttribute(String, Object)} to set
+     * span decorators
      */
     public static final String SPAN_DECORATORS = TracingFilter.class.getName() + ".spanDecorators";
     /**
-     * Use as a key of {@link ServletContext#setAttribute(String, Object)} to skip pattern
+     * Use as a key of {@link ServletContext#setAttribute(String, Object)} to skip
+     * pattern
      */
     public static final String SKIP_PATTERN = TracingFilter.class.getName() + ".skipPattern";
 
     /**
-     * Used as a key of {@link HttpServletRequest#setAttribute(String, Object)} to inject server span context
+     * Used as a key of {@link HttpServletRequest#setAttribute(String, Object)} to
+     * inject server span context
      */
     public static final String SERVER_SPAN_CONTEXT = TracingFilter.class.getName() + ".activeSpanContext";
 
@@ -78,7 +86,8 @@ public class TracingFilter implements Filter {
     private Pattern skipPattern;
 
     /**
-     * Tracer instance has to be registered with {@link GlobalTracer#register(Tracer)}.
+     * Tracer instance has to be registered with
+     * {@link GlobalTracer#register(Tracer)}.
      */
     public TracingFilter() {
         this(GlobalTracer.get());
@@ -93,9 +102,10 @@ public class TracingFilter implements Filter {
 
     /**
      *
-     * @param tracer tracer
+     * @param tracer         tracer
      * @param spanDecorators decorators
-     * @param skipPattern null or pattern to exclude certain paths from tracing e.g. "/health"
+     * @param skipPattern    null or pattern to exclude certain paths from tracing
+     *                       e.g. "/health"
      */
     public TracingFilter(Tracer tracer, List<ServletFilterSpanDecorator> spanDecorators, Pattern skipPattern) {
         this.tracer = tracer;
@@ -113,7 +123,7 @@ public class TracingFilter implements Filter {
         Object contextAttribute = servletContext.getAttribute(SPAN_DECORATORS);
         if (contextAttribute instanceof Collection) {
             List<ServletFilterSpanDecorator> decorators = new ArrayList<>();
-            for (Object decorator: (Collection)contextAttribute) {
+            for (Object decorator : (Collection) contextAttribute) {
                 if (decorator instanceof ServletFilterSpanDecorator) {
                     decorators.add((ServletFilterSpanDecorator) decorator);
                 } else {
@@ -145,12 +155,12 @@ public class TracingFilter implements Filter {
          * If request is traced then do not start new span.
          */
 
-    System.out.println("*-* Server doFilter -- deniyoruz2");
-    // //toslali: do not create span here -- trying something
-    //     if (true){
-    //         chain.doFilter(servletRequest, servletResponse);
-    //         return;
-    //     }
+        System.out.println("*-* Server doFilter -- deniyoruz2");
+        // //toslali: do not create span here -- trying something
+        // if (true){
+        // chain.doFilter(servletRequest, servletResponse);
+        // return;
+        // }
 
         if (servletRequest.getAttribute(SERVER_SPAN_CONTEXT) != null) {
             System.out.println("*-* Dofilter bir daha");
@@ -159,14 +169,19 @@ public class TracingFilter implements Filter {
             SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
                     new HttpServletRequestExtractAdapter(httpRequest));
 
-	    System.out.println("*-*Server building span " + httpRequest.getMethod());
+            System.out.println("*-* PArent information baggage items");
+            for (Entry<String, String> s : extractedContext.baggageItems()) {
+                System.out.println(s);
+            }
+
+	    // System.out.println("*-*Server building span " + httpRequest.getMethod());
 
             final Scope scope = tracer.buildSpan(httpRequest.getMethod())
                     .asChildOf(extractedContext)
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                     .startActive(false);
 
-                    System.out.println("*-*Server builded current span " + scope.span());
+            System.out.println("*-*Server builded current span " + scope.span());
 
             httpRequest.setAttribute(SERVER_SPAN_CONTEXT, scope.span().context());
 
