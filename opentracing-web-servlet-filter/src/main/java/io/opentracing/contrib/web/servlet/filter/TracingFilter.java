@@ -171,10 +171,11 @@ public class TracingFilter implements Filter {
             for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
                 spanDecorator.onRequest(httpRequest, scope.span());
             }
-	        System.out.println("*-* do filter now --  building");
+	        System.out.println("*-* do filter now after onrequest ");
            // final Scope scope = null;
             try {
                 chain.doFilter(servletRequest, servletResponse);
+                System.out.println("*-* after do filter now ");
                 if (!httpRequest.isAsyncStarted()) {
                     for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
                         spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
