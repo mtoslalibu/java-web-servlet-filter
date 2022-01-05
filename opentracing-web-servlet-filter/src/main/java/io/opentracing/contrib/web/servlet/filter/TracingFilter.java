@@ -145,7 +145,7 @@ public class TracingFilter implements Filter {
          * If request is traced then do not start new span.
          */
 
-	System.out.print("*-* Server doFilter");
+	System.out.println("*-* Server doFilter");
         if (servletRequest.getAttribute(SERVER_SPAN_CONTEXT) != null) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
@@ -164,8 +164,8 @@ public class TracingFilter implements Filter {
             for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
                 spanDecorator.onRequest(httpRequest, scope.span());
             }
-	    System.out.println("*-* do filter now");
-
+	    System.out.println("*-* do filter now --  building");
+           // final Scope scope = null;
             try {
                 chain.doFilter(servletRequest, servletResponse);
                 if (!httpRequest.isAsyncStarted()) {
