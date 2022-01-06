@@ -182,7 +182,7 @@ public class TracingFilter implements Filter {
 	    // System.out.println("*-*Server building span " + httpRequest.getMethod());
 
             final Scope scope = tracer.buildSpan(httpRequest.getMethod())
-                    .asChildOf(extractedContext)
+                    // .asChildOf(extractedContext)
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                     .startActive(false);
 
