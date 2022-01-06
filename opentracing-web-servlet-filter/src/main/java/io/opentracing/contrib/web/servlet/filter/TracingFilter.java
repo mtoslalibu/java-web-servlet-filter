@@ -181,7 +181,7 @@ public class TracingFilter implements Filter {
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                     .startActive(false);
 
-            System.out.println("*-* Server builded current span " + scope.span());
+            System.out.println("*-* Server builded current span " + scope == null ? "null" : scope.span());
 
             // tsl: let's not make this span active, so that we can access parent context at TracingHandlerInterceptor
             // httpRequest.setAttribute(SERVER_SPAN_CONTEXT, scope.span().context());
