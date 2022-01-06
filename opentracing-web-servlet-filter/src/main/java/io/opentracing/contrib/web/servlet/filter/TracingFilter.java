@@ -170,9 +170,9 @@ public class TracingFilter implements Filter {
                     new HttpServletRequestExtractAdapter(httpRequest));
 
             System.out.println("*-* PArent information baggage items");
-            for (Entry<String, String> s : extractedContext.baggageItems()) {
-                System.out.println(s);
-            }
+            // for (Entry<String, String> s : extractedContext.baggageItems()) {
+            //     System.out.println(s);
+            // }
 
 	    // System.out.println("*-*Server building span " + httpRequest.getMethod());
 
