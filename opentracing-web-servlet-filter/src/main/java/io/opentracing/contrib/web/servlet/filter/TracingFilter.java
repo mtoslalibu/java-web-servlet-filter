@@ -172,7 +172,12 @@ public class TracingFilter implements Filter {
             //tsl: check parent now
             
             Scope parentSpan = tracer.scopeManager().active();
-            System.out.println("*-* PArent information: " + parentSpan== null ? "null" : parentSpan.span());
+            System.out.println("*-* gelmistik tracing filter");
+            if (parentSpan != null){
+                System.out.println("*-* gelmistik tracing filter2 ");
+                System.out.println("*-* PArent information: " +  parentSpan.span());
+            }
+            
 
 	    // System.out.println("*-*Server building span " + httpRequest.getMethod());
 
