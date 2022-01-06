@@ -183,7 +183,8 @@ public class TracingFilter implements Filter {
 
             System.out.println("*-*Server builded current span " + scope.span());
 
-            httpRequest.setAttribute(SERVER_SPAN_CONTEXT, scope.span().context());
+            // tsl: let's not make this span active, so that we can access parent context at TracingHandlerInterceptor
+            // httpRequest.setAttribute(SERVER_SPAN_CONTEXT, scope.span().context());
 
             for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
                 spanDecorator.onRequest(httpRequest, scope.span());
