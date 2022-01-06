@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
@@ -182,27 +181,18 @@ public class TracingFilter implements Filter {
 
 	    // System.out.println("*-*Server building span " + httpRequest.getMethod());
 
-            // final Scope scope = tracer.buildSpan(httpRequest.getMethod())
-            //         .asChildOf(extractedContext)
-            //         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
-            //         .startActive(false);
-
-            final Span span = tracer.buildSpan(httpRequest.getMethod())
+            final Scope scope = tracer.buildSpan(httpRequest.getMethod())
                     .asChildOf(extractedContext)
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
-                    .start();
+                    .startActive(false);
 
-
-
-
-            System.out.println("*-* Server builded current span " + span == null ? "null" : span());
+            System.out.println("*-* Server builded current span " + scope == null ? "null" : scope.span());
 
             // tsl: let's not make this span active, so that we can access parent context at TracingHandlerInterceptor
             // httpRequest.setAttribute(SERVER_SPAN_CONTEXT, scope.span().context());
 
             for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
-                // spanDecorator.onRequest(httpRequest, scope.span());
-                spanDecorator.onRequest(httpRequest, span);
+                spanDecorator.onRequest(httpRequest, scope.span());
             }
 	        System.out.println("*-* do filter now after onrequest ");
            // final Scope scope = null;
@@ -211,15 +201,13 @@ public class TracingFilter implements Filter {
                 System.out.println("*-* after do filter now ");
                 if (!httpRequest.isAsyncStarted()) {
                     for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
-                        // spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
-                        spanDecorator.onResponse(httpRequest, httpResponse, span);
+                        spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
                     }
                 }
                 // catch all exceptions (e.g. RuntimeException, ServletException...)
             } catch (Throwable ex) {
                 for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
-                    // spanDecorator.onError(httpRequest, httpResponse, ex, scope.span());
-                    spanDecorator.onError(httpRequest, httpResponse, ex, span);
+                    spanDecorator.onError(httpRequest, httpResponse, ex, scope.span());
                 }
                 throw ex;
             } finally {
@@ -234,11 +222,9 @@ public class TracingFilter implements Filter {
                             for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
                                     spanDecorator.onResponse(httpRequest,
                                     httpResponse,
-                                    // scope.span());
-                                    span);
+                                    scope.span());
                             }
-                            // scope.span().finish();
-                            span.finish();
+                            scope.span().finish();
                         }
 
                         @Override
@@ -249,8 +235,7 @@ public class TracingFilter implements Filter {
                                   spanDecorator.onTimeout(httpRequest,
                                       httpResponse,
                                       event.getAsyncContext().getTimeout(),
-                                    //   scope.span());
-                                    span);
+                                      scope.span());
                               }
                         }
 
@@ -262,8 +247,7 @@ public class TracingFilter implements Filter {
                                 spanDecorator.onError(httpRequest,
                                     httpResponse,
                                     event.getThrowable(),
-                                    // scope.span());
-                                    span);
+                                    scope.span());
                             }
                         }
 
@@ -275,11 +259,9 @@ public class TracingFilter implements Filter {
                     // If not async, then need to explicitly finish the span associated with the scope.
                     // This is necessary, as we don't know whether this request is being handled
                     // asynchronously until after the scope has already been started.
-                    // scope.span().finish();
-                    span.finish();
+                    scope.span().finish();
                 }
-                // scope.close();
-                // span.clo
+                scope.close();
             }
         }
     }
