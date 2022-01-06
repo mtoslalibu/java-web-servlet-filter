@@ -169,10 +169,10 @@ public class TracingFilter implements Filter {
             SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
                     new HttpServletRequestExtractAdapter(httpRequest));
 
-            System.out.println("*-* PArent information baggage items");
-            // for (Entry<String, String> s : extractedContext.baggageItems()) {
-            //     System.out.println(s);
-            // }
+            //tsl: check parent now
+            
+            Scope parentSpan = tracer.scopeManager().active();
+            System.out.println("*-* PArent information: " + parentSpan.span());
 
 	    // System.out.println("*-*Server building span " + httpRequest.getMethod());
 
@@ -181,7 +181,7 @@ public class TracingFilter implements Filter {
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                     .startActive(false);
 
-            System.out.println("*-*Server builded current span " + scope.span());
+            System.out.println("*-* Server builded current span " + scope.span());
 
             // tsl: let's not make this span active, so that we can access parent context at TracingHandlerInterceptor
             // httpRequest.setAttribute(SERVER_SPAN_CONTEXT, scope.span().context());
