@@ -181,87 +181,87 @@ public class TracingFilter implements Filter {
 
 	    // System.out.println("*-*Server building span " + httpRequest.getMethod());
 
-            final Scope scope = tracer.buildSpan(httpRequest.getMethod())
-                    .asChildOf(extractedContext)
-                    .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
-                    .startActive(false);
+            // final Scope scope = tracer.buildSpan(httpRequest.getMethod())
+            //         .asChildOf(extractedContext)
+            //         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
+            //         .startActive(false);
 
-            System.out.println("*-* Server builded current span " + scope == null ? "null" : scope.span());
+            // System.out.println("*-* Server builded current span " + scope == null ? "null" : scope.span());
 
             // tsl: let's not make this span active, so that we can access parent context at TracingHandlerInterceptor
             // httpRequest.setAttribute(SERVER_SPAN_CONTEXT, scope.span().context());
 
-            for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
-                spanDecorator.onRequest(httpRequest, scope.span());
-            }
+            // for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
+            //     spanDecorator.onRequest(httpRequest, scope.span());
+            // }
 	        System.out.println("*-* do filter now after onrequest ");
            // final Scope scope = null;
             try {
                 chain.doFilter(servletRequest, servletResponse);
                 System.out.println("*-* after do filter now ");
                 if (!httpRequest.isAsyncStarted()) {
-                    for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
-                        spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
-                    }
+                    // for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
+                    //     spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
+                    // }
                 }
                 // catch all exceptions (e.g. RuntimeException, ServletException...)
             } catch (Throwable ex) {
-                for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
-                    spanDecorator.onError(httpRequest, httpResponse, ex, scope.span());
-                }
+                // for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
+                //     spanDecorator.onError(httpRequest, httpResponse, ex, scope.span());
+                // }
                 throw ex;
             } finally {
-                if (httpRequest.isAsyncStarted()) {
-                    // what if async is already finished? This would not be called
-                    httpRequest.getAsyncContext()
-                            .addListener(new AsyncListener() {
-                        @Override
-                        public void onComplete(AsyncEvent event) throws IOException {
-                            HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
-                            HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
-                            for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
-                                    spanDecorator.onResponse(httpRequest,
-                                    httpResponse,
-                                    scope.span());
-                            }
-                            scope.span().finish();
-                        }
+                // if (httpRequest.isAsyncStarted()) {
+                //     // what if async is already finished? This would not be called
+                //     httpRequest.getAsyncContext()
+                //             .addListener(new AsyncListener() {
+                //         @Override
+                //         public void onComplete(AsyncEvent event) throws IOException {
+                //             HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
+                //             HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
+                //             for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
+                //                     spanDecorator.onResponse(httpRequest,
+                //                     httpResponse,
+                //                     scope.span());
+                //             }
+                //             scope.span().finish();
+                //         }
 
-                        @Override
-                        public void onTimeout(AsyncEvent event) throws IOException {
-                            HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
-                            HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
-                            for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
-                                  spanDecorator.onTimeout(httpRequest,
-                                      httpResponse,
-                                      event.getAsyncContext().getTimeout(),
-                                      scope.span());
-                              }
-                        }
+                //         @Override
+                //         public void onTimeout(AsyncEvent event) throws IOException {
+                //             HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
+                //             HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
+                //             for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
+                //                   spanDecorator.onTimeout(httpRequest,
+                //                       httpResponse,
+                //                       event.getAsyncContext().getTimeout(),
+                //                       scope.span());
+                //               }
+                //         }
 
-                        @Override
-                        public void onError(AsyncEvent event) throws IOException {
-                            HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
-                            HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
-                            for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
-                                spanDecorator.onError(httpRequest,
-                                    httpResponse,
-                                    event.getThrowable(),
-                                    scope.span());
-                            }
-                        }
+                //         @Override
+                //         public void onError(AsyncEvent event) throws IOException {
+                //             HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
+                //             HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
+                //             for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
+                //                 spanDecorator.onError(httpRequest,
+                //                     httpResponse,
+                //                     event.getThrowable(),
+                //                     scope.span());
+                //             }
+                //         }
 
-                        @Override
-                        public void onStartAsync(AsyncEvent event) throws IOException {
-                        }
-                    });
-                } else {
-                    // If not async, then need to explicitly finish the span associated with the scope.
-                    // This is necessary, as we don't know whether this request is being handled
-                    // asynchronously until after the scope has already been started.
-                    scope.span().finish();
-                }
-                scope.close();
+                //         @Override
+                //         public void onStartAsync(AsyncEvent event) throws IOException {
+                //         }
+                //     });
+                // } else {
+                //     // If not async, then need to explicitly finish the span associated with the scope.
+                //     // This is necessary, as we don't know whether this request is being handled
+                //     // asynchronously until after the scope has already been started.
+                //     scope.span().finish();
+                // }
+                // scope.close();
             }
         }
     }
