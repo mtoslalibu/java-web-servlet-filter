@@ -162,10 +162,17 @@ public class TracingFilter implements Filter {
             SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
                     new HttpServletRequestExtractAdapter(httpRequest));
 
-            final Scope scope = tracer.buildSpan(httpRequest.getMethod())
-                    .asChildOf(extractedContext)
-                    .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
-                    .startActive(false);
+
+        long startTime = System.nanoTime();
+
+
+        final Scope scope = tracer.buildSpan(httpRequest.getMethod())
+                .asChildOf(extractedContext)
+                .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
+                .startActive(false);
+
+        long endTime = System.nanoTime();
+        System.out.println("*-* Astraea-server overhead: " + (endTime - startTime));
             // System.out.println("*-* Server builded current span " + scope == null ? "null" : scope.span());
             // tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
 
@@ -242,14 +249,20 @@ public class TracingFilter implements Filter {
                     // This is necessary, as we don't know whether this request is being handled
                     // asynchronously until after the scope has already been started.
                     if (tracer.scopeManager().active() != null){
-                        System.out.println("*-* No active scope so not finishing the span ");
+                        System.out.println("*-*  active scope so  finishing the span ");
                         scope.span().finish();
+                    }
+                    else{
+                        System.out.println("*-*  No active scope so no finishing the span ");
                     }
                     
                 }
                 if (tracer.scopeManager().active() != null){
                     System.out.println("*-* No active scope so not closing the scope ");
                 scope.close();}
+                else{
+                    System.out.println("*-*  No active scope so no closing the scope ");
+                }
             }
         }
     }
