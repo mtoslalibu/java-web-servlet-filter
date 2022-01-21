@@ -156,7 +156,7 @@ public class TracingFilter implements Filter {
         // System.out.println("*-* Server doFilter -- gelmisti");
 
         if (servletRequest.getAttribute(SERVER_SPAN_CONTEXT) != null) {
-            System.out.println("*-* Dofilter bir daha");
+            // System.out.println("*-* Dofilter bir daha");
             chain.doFilter(servletRequest, servletResponse);
         } else {
             SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
@@ -173,7 +173,7 @@ public class TracingFilter implements Filter {
 
         // long endTime = System.nanoTime();
         // System.out.println("*-* Astraea-server overhead: " + (endTime - startTime));
-            System.out.println("*-* Server builded current span " + scope == null ? "null" : scope.span());
+            // System.out.println("*-* Server builded current span " + scope == null ? "null" : scope.span());
             // tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
 
             // tsl: let's not make this span active, so that we can access parent context at TracingHandlerInterceptor
